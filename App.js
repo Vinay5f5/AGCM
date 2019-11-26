@@ -6,109 +6,152 @@
  * @flow
  */
 
-import React from 'react';
+import React , {Component} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
   View,
+  Button,
+  Image,
+  MapView,
   Text,
   StatusBar,
+  Switch
 } from 'react-native';
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 
-const App: () => React$Node = () => {
-  return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
+
+export default class App extends Component{
+   
+  constructor (props) {
+    super (props) ;
+    this.state = {
+      machine: null,
+      isLoading : true,
+      dataSource : null,
+      startbutton : "Start",
+      stopbutton : "Stop",
+    }
+  }
+  disabled = true
+
+  componentDidUpdate(){
+    // console.log(this.disabled)
+  }
+  
+  componentDidMount = () => {
+    this.apiCall()
+  }
+
+  apiCall = () => {
+    return fetch('https://api.thingspeak.com/channels/871943/fields/1.json?api_key=2RTQXXEHVHBAJ1ID&results=1')
+      .then((response) => response.json())
+      .then((responseJson) => {
+        // console.log(this.disabled)
+        console.log(responseJson.feeds[0].field1)
+        this.disabled = false
+        this.setState({
+          isLoading: false,
+          dataSource: responseJson.feeds,
+          machine : parseInt(responseJson.feeds[0].field1),
+        });
+      })
+      .catch((error) =>{
+        // this.disabled = false
+        console.error(error);
+      });
+  } 
+  
+  turnOn = () => {
+    this.disabled = true
+    fetch('https://api.thingspeak.com/update?api_key=89UY3M0WQAQGMEO5', {
+      method: 'POST',
+      headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+      field1: 1,
+      }),
+    }).then(res => {
+      console.log(res+" turnon")
+      this.apiCall()
+    }).catch(err => {
+      
+    })
+  }
+  
+  turnOff = () => {
+    this.disabled = true
+    fetch('https://api.thingspeak.com/update?api_key=89UY3M0WQAQGMEO5', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+      field1: 0,
+      }),
+    }).then(res => {
+      console.log(res+" turnoff")
+      this.apiCall()
+    }).catch(err => {
+
+    })
+
+    // this.setState({machine:0})
+  }
+  
+  render () {
+    if(this.state.isLoading){
+      return(
+        <View style={styles.container}>
+          <Text>Connecting to the Cloud..</Text>
+        </View>
+      )
+    }
+    else{
+       let ms = this.state.dataSource.map((val,key) => {
+        return <View key={key}><Text style={{color: '#9B0A96'}}>{val.field1}</Text></View>
+      });
+      
+      return (
+        <View style={styles.container}>
+          <Image style={{width: 300, height: 300}} source={{uri:"https://webstockreview.net/images/clipart-grass-lawn-mower-17.png"}} />
+          <Text style={{color: '#0AA23A'}}>ThingsPeak Connected !!</Text>
+          <Text>Machine Status : </Text>{this.state.machine}
+          <View>
+            {this.state.machine ?
+            <View>
+              <Button title="Stop the Machine" disabled={this.disabled} onPress={this.turnOff}/>
             </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
+            :
+            <View>
+              <Button title="Start the Machine" disabled={this.disabled} onPress={this.turnOn}/>
+            </View>}
           </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
-  );
-};
+          
+        </View>
+      ) ;
+    }
+       
+  }
+}
 
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize : 30,
   },
-  engine: {
-    position: 'absolute',
-    right: 0,
+  mainHeading: {
+    textAlign : 'center',
+    alignItems : 'center',
+    color : 'skyblue',
+    fontSize : 30
   },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
+ 
 });
-
-export default App;
