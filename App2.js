@@ -37,7 +37,7 @@ export default class App extends Component{
   disabled = true
 
   componentDidUpdate(){
-    console.log(this.disabled)
+    // console.log(this.disabled)
   }
   
   componentDidMount = () => {
@@ -48,8 +48,8 @@ export default class App extends Component{
     return fetch('https://api.thingspeak.com/channels/871943/fields/1.json?api_key=2RTQXXEHVHBAJ1ID&results=1')
       .then((response) => response.json())
       .then((responseJson) => {
-        console.log(this.disabled)
-        console.log(responseJson)
+        // console.log(this.disabled)
+        console.log(responseJson.feeds[0].field1)
         this.disabled = false
         this.setState({
           isLoading: false,
@@ -75,7 +75,7 @@ export default class App extends Component{
       field1: 1,
       }),
     }).then(res => {
-      console.log(res)
+      console.log(res+" turnon")
       this.apiCall()
     }).catch(err => {
       
@@ -94,6 +94,7 @@ export default class App extends Component{
       field1: 0,
       }),
     }).then(res => {
+      console.log(res+" turnoff")
       this.apiCall()
     }).catch(err => {
 
