@@ -119,7 +119,7 @@ export default class App extends Component{
         <View style={styles.container}>
           <Image style={{width: 300, height: 300}} source={{uri:"https://webstockreview.net/images/clipart-grass-lawn-mower-17.png"}} />
           <Text style={{color: '#0AA23A'}}>ThingsPeak Connected !!</Text>
-          <Text>Machine Status : </Text>{this.state.machine}
+          <Text>Machine Status : {this.state.machine} </Text>
           <View>
             {this.state.machine ?
             <View>
