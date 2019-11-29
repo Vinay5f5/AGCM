@@ -19,6 +19,7 @@ import {
   StatusBar,
   Switch
 } from 'react-native';
+import { withStatement } from '@babel/types';
 
 
 
@@ -32,6 +33,7 @@ export default class App extends Component{
       dataSource : null,
       startbutton : "Start",
       stopbutton : "Stop",
+      bs : false
     }
   }
   disabled = true
@@ -43,7 +45,18 @@ export default class App extends Component{
   componentDidMount = () => {
     this.apiCall()
   }
-
+  bschange = () => {
+    this.setState({
+      bs : true 
+    })
+    setTimeout(() => {
+      this.setState({
+        bs : false 
+      })
+    }, 8000);
+    
+ 
+  }
   apiCall = () => {
     return fetch('https://api.thingspeak.com/channels/871943/fields/1.json?api_key=2RTQXXEHVHBAJ1ID&results=1')
       .then((response) => response.json())
@@ -78,8 +91,9 @@ export default class App extends Component{
       console.log(res)
       this.apiCall()
     }).catch(err => {
-      
+    
     })
+  this.bschange()
   }
   
   turnOff = () => {
@@ -98,7 +112,7 @@ export default class App extends Component{
     }).catch(err => {
 
     })
-
+  this.bschange()
     // this.setState({machine:0})
   }
   
@@ -123,11 +137,11 @@ export default class App extends Component{
           <View>
             {this.state.machine ?
             <View>
-              <Button title="Stop the Machine" disabled={this.disabled} onPress={this.turnOff}/>
+              <Button title="Stop the Machine" disabled={this.state.bs} onPress={this.turnOff}/>
             </View>
             :
             <View>
-              <Button title="Start the Machine" disabled={this.disabled} onPress={this.turnOn}/>
+              <Button title="Start the Machine" disabled={this.state.bs} onPress={this.turnOn}/>
             </View>}
           </View>
           
